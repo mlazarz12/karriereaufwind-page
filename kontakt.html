@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kontakt – KarriereAufwind</title>
+<meta name="robots" content="noindex"><!-- ENTWURF -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0d1b2a; --paper:#ffffff; --line:#d7e3ee; --line-strong:#aac2d8;
+    --petrol:#0b3d91; --petrol-2:#1565c0; --gold:#d1393e;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:"Figtree",system-ui,sans-serif; font-size:17px; line-height:1.6}
+  h1{font-family:"Fraunces",Georgia,serif; margin:0 0 10px; font-weight:600; letter-spacing:-.01em}
+  .w{max-width:620px; margin:0 auto; padding:40px 24px 60px}
+  a{color:var(--petrol-2)}
+  a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible{outline:3px solid var(--gold); outline-offset:2px}
+  p.lead{color:#3c4a5c; margin:0 0 28px}
+  form{background:#fff; border:1px solid var(--line); border-radius:6px; padding:26px 24px}
+  label{display:block; margin:16px 0 6px; font-weight:600; font-size:.95rem}
+  label:first-of-type{margin-top:0}
+  input[type=text],input[type=email],textarea{
+    width:100%; padding:11px 12px; border:1px solid var(--line-strong); border-radius:4px;
+    font-size:1rem; font-family:inherit; background:#fdfcf9;
+  }
+  textarea{resize:vertical; min-height:120px}
+  input:focus,textarea:focus{border-color:var(--petrol-2)}
+  button[type=submit]{
+    margin-top:20px; background:var(--petrol); color:#fff; border:0; border-radius:4px;
+    padding:13px 26px; font-size:1.02rem; font-weight:700; font-family:inherit; cursor:pointer;
+  }
+  button[type=submit]:hover{background:var(--petrol-2)}
+  #msg{margin-top:14px; font-weight:600; font-size:.95rem}
+  #msg.err{color:#9c3b2e}
+  #msg.ok{color:var(--petrol-2)}
+  footer{margin-top:40px; padding-top:20px; border-top:1px solid var(--line); font-size:.92rem; color:#5a6a7a; display:flex; gap:18px}
+</style>
+</head>
+<body>
+<div class="w">
+  <p><a href="index.html">← Zur Startseite</a></p>
+  <h1>Kontakt</h1>
+  <p class="lead">Fragen zu KarriereAufwind? Schreib uns kurz, wir melden uns per E-Mail zurück.</p>
+
+  <form id="f" novalidate>
+    <label for="nm">Name</label>
+    <input id="nm" name="name" type="text" autocomplete="name" required>
+    <label for="em">E-Mail-Adresse</label>
+    <input id="em" name="email" type="email" autocomplete="email" required>
+    <label for="nc">Nachricht</label>
+    <textarea id="nc" name="nachricht" required></textarea>
+    <div style="position:absolute;left:-5000px" aria-hidden="true"><label for="ws">Webseite (bitte leer lassen)</label><input id="ws" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+    <button type="submit">Nachricht senden</button>
+    <div id="msg" role="status"></div>
+  </form>
+
+  <footer>
+    <a href="impressum.html">Impressum</a> <a href="datenschutz.html">Datenschutz</a>
+  </footer>
+</div>
+
+<script>
+// Kontaktformular -> Make-Szenario "KarriereAufwind – Kontaktanfrage" (8677137)
+const WEBHOOK = "https://hook.eu1.make.com/192tmtk9k3syaaycbkyorjtu3di5a3a0";
+const GELADEN = Date.now();
+const f = document.getElementById('f'), msg = document.getElementById('msg');
+f.addEventListener('submit', async e => {
+  e.preventDefault();
+  msg.textContent = ''; msg.className = '';
+  const ok = f.name.value.trim() && f.email.validity.valid && f.nachricht.value.trim();
+  if (!ok) { msg.textContent = 'Bitte Name, eine gültige E-Mail-Adresse und eine Nachricht eingeben.'; msg.className = 'err'; return; }
+  const payload = {
+    name: f.name.value.trim(), email: f.email.value.trim(), nachricht: f.nachricht.value.trim(),
+    website: f.website.value
+  };
+  const danke = 'Danke, deine Nachricht ist angekommen! Wir melden uns per E-Mail.';
+  if (f.website.value || Date.now() - GELADEN < 3000) { f.reset(); msg.textContent = danke; msg.className = 'ok'; return; }
+  if (f.dataset.sent) return; f.dataset.sent = '1';
+  try {
+    const r = await fetch(WEBHOOK, {method:'POST', body: new URLSearchParams(payload)});
+    if (!r.ok) throw 0;
+    f.reset(); msg.textContent = danke; msg.className = 'ok';
+  } catch { delete f.dataset.sent; msg.textContent = 'Das hat leider nicht geklappt. Bitte versuche es später erneut oder schreib direkt an info@karriere-aufwind.de.'; msg.className = 'err'; }
+});
+</script>
+</body>
+</html>
